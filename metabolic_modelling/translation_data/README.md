@@ -2,11 +2,12 @@ Tables translating metabolites and reactions of different widely used namespaces
 The script `format_mnx_tables.py` can be used to format the files `reac_prop.tsv` and `reac_xref.tsv` into a translation table. It requires pandas to run.
 Also, Philipp Wendering has the data in a nice format in his COMMIT project: https://github.com/pwendering/COMMIT/tree/master/data/tables/MNXref
 
-The following tables were not uploaded due to copyright, but can be obtained from the databases directly (or by asking Emil):
+**The following tables were not uploaded due to copyright**, but can be obtained from the databases directly (or by asking Emil):
 
 - metacyc2ec.csv can be obtained from PGDB local install. The file protein-seq-ids-reduced-70.dat is in the pathway-tools folder and can be parsed with a custom python script. Ask Emil about it.
 
 **KEGG API is a great resource for translations**
+
 For documentation, see https://www.kegg.jp/kegg/rest/keggapi.html. Especially the link and list command are very useful:
 - ec2pw.tsv, mapping EC numbers to KEGG pathway identifiers can be downloaded from https://rest.kegg.jp/link/pathway/ec
 - kegg2ec.tsv can be obtained from https://rest.kegg.jp/link/enzyme/reaction
