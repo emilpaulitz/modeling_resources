@@ -237,7 +237,8 @@ def print_rxns(rs, model = None, print_genes=False):
         if type(r) == str:
             r = get_rid(model, r)
         print_rxn(r, print_genes=print_genes)
-        
+
+# return all reactions that all of the given metabolites are involved in
 def find_rxn_from_mids(model, mids, allow_others = True):
     if type(mids) in [set, list]:
         found_rxns = list()
@@ -317,6 +318,7 @@ def add_rxns_from_mnx_table(model, table_path, rids, lower_bound=0, upper_bound=
         print(', '.join(new_mids))
     return model           
         
+# check how many (and which, if verb) metabolites of the given bio_rxn can be produced by the model
 # build a biomass reaction for each of the components,
 # optimize, check if component can be produced, then remove the reactions again
 def dissect_bio(model, bio_rxn, verb=False):
@@ -412,6 +414,8 @@ def check_production(model, mid, add_export = list(), add_import = list(), exclu
     
     return result
 
+# check which imports are required for growth. If find_combinations, also tests all possible combinations of import reactions for essentiality.
+# the import reactions are are to be tested need to have an id that starts with IM_, EX_ (or any lower case) and need to only add metabolites to the model, not consume any 
 def analyze_uptake(model, eps = 1e-6, include_excretion = False, find_combinations = False):
     growth = model.slim_optimize()
 
@@ -461,7 +465,8 @@ def analyze_uptake(model, eps = 1e-6, include_excretion = False, find_combinatio
                     if model.slim_optimize() < eps:
                         print('lethal set:', ', '.join(map(lambda r: r.id, to_test)))
 
-# determine whether two reactions are equal (1), only different in reaction bounds (-1), or not (0)
+# determine whether two reactions are equal (1), only different in reaction bounds (-1), or not equal (0)
+# ignores metabolites defined by H_id
 def reactions_equal(r1, r2, H_id = 'MNXM1[s]', custom_equivalences = dict()):
     # check whether both reactions involve the same set of metabolites
     # generate dict like r.metabolites but with m.id instead of m for comparability
@@ -489,7 +494,7 @@ def reactions_equal(r1, r2, H_id = 'MNXM1[s]', custom_equivalences = dict()):
     
     return 1
 
-# basically dfs/bfs. Finds cliques
+# basically dfs/bfs with no guaranteed order. Finds cliques.
 # excludes dead-end reactions
 def find_connected(model, start_rxn_id, include_dead_end = False):
     dead_ends_mets = set()
