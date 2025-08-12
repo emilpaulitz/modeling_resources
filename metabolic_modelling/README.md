@@ -5,7 +5,7 @@ In the folder translation_data, data translating between different namespaces, E
 
 The script **BLAST2rxns.py** by Emilian Paulitz automatically annotates a set of protein sequences with EC numbers. Input:
 - The script expects as input a .tsv table obtained from running DIAMOND (or BLAST) with your proteins against Araport11 or Uniprot, or a .tsv file coming from deepec (adapt `--format` in any case).
-	- The DIAMOND runs could be done like this (`--outfmt` creates tsv forma as expected by BLAST2rxns.py): `diamond blastp --query query.faa --db ./diamond_db.dmnd --evalue <e-val, e.g. 1e-2> --threads <threads> --max-target-seqs <e.g. 5> --outfmt 6 qseqid sseqid pident evalue --out ./diamond.tsv` 
+	- The DIAMOND runs could be done like this (`--outfmt` creates tsv forma as expected by BLAST2rxns.py): `diamond blastp --query query.faa --db ./diamond_db.dmnd --evalue <e-val, e.g. 1e-2> --threads <threads> --max-target-seqs <e.g. 5> --outfmt 6 qseqid sseqid pident evalue slen qlen length --out ./diamond.tsv` 
 	- `diamond_db.dmnd` is created by `diamond makedb --in db.faa --db ./diamond_db`
 		- `db.faa` can be the protein fasta file of Araport11 or Uniprot database. Remember to adapt `--format` of `BLAST2rxns.py` accordingly
 	- Output:

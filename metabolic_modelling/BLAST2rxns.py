@@ -538,7 +538,7 @@ def main(args):
     if args.input_format == 'uniprot':
         # parse diamond tsv
         df = pd.read_csv(args.input_path, sep='\t', header=None)
-        df.columns =['query', 'subject', 'pid', 'e']
+        df.columns =['query', 'subject', 'pid', 'e', 'slen', 'qlen', 'mlen']
         df[['pid', 'e']] = df[['pid', 'e']].astype(float)
 
         # extract uniprot ID / gene ID 
@@ -546,7 +546,11 @@ def main(args):
         df['query'] = df['query'].apply(lambda x: x.split('|')[0])
 
         # Filter df for valid hits
-        valid_hits = df.loc[df['pid'] >= args.BLAST_pid_threshold, ].groupby(by='query').first().reset_index()
+        df['min_perc_match'] = (df[['slen', 'qlen']].min(axis=1) * args.min_percentage_match)
+        valid_hits = df.loc[(df['pid'] >= args.BLAST_pid_threshold) & 
+                            (df['min_perc_match'] <= df['mlen']) &
+                            ((df['qlen'] * args.length_factor) >= df['slen']) &
+                            ((df['slen'] * args.length_factor) >= df['qlen']), ].groupby(by='query').first().reset_index()
 
         # Extract dictionary with aggregated pid and query entries: uniprotID:{'query':[genes*],'pid':max_pid}
         uniprot_entries = valid_hits.groupby('subject')[['query', 'pid']].agg({'query': list, 'pid': 'max'}).to_dict(orient='index')
@@ -698,9 +702,18 @@ if __name__ == "__main__":
     parser.add_argument("-f", "--input-format", action="store", default='uniprot',
                         help="Format of input. Either a mapping against Araport11 ('araport'), "
                         "a mapping against UniProtKB (default, 'uniprot'), or a tsv by DeepEC "
-                        "already containing EC numbers ('deepec').")
+                        "already containing EC numbers ('deepec'). In case of uniprot: the "
+                        "output of a blastp run with \'--outfmt 6 qseqid sseqid pident evalue qlen slen length\' is expected.")
     parser.add_argument("-b", "--blast_pid_threshold", action="store", type=int, default=90, dest="BLAST_pid_threshold",
-                         help='BLAST pid threshold to filter results by (default 90)')
+                         help='Filter parameter for BLAST hits: BLAST pid threshold to filter results by (default 90)')
+    parser.add_argument("-p", "--min_percentage_match", action="store", type=float, default=.55, dest="min_percentage_match",
+                         help='Filter parameter for BLAST hits: BLAST hits for which the length of the matching ' 
+                         'sequence is less than the given percentage of the shorter of the two query and subject sequence ' 
+                         'are filtered out (default 0.56)')
+    parser.add_argument("-l", "--length_factor", action="store", type=float, default=2., dest="length_factor",
+                         help='Filter parameter for BLAST hits: Maximal allowed factor between the length of the query '
+                         'and the subject sequence (default 2.0).')
 
     args = parser.parse_args()
     main(args)
+
